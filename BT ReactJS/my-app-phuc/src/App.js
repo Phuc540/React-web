@@ -1,304 +1,166 @@
-import './App.css';
-import { useEffect, useMemo, useState } from 'react';
-import { BrowserRouter, Link, Navigate, Route, Routes, useNavigate } from 'react-router-dom';
-import {
-  createUserWithEmailAndPassword,
-  GoogleAuthProvider,
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  signInWithPopup,
-  signOut
-} from 'firebase/auth';
+import { useEffect, useState } from 'react';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth } from './firebase';
-
-function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    setError('');
-    setLoading(true);
-
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      navigate('/');
-    } catch (e) {
-      setError('Đăng nhập thất bại. Vui lòng kiểm tra lại email/mật khẩu.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoogleLogin = async () => {
-    setError('');
-    setLoading(true);
-
-    try {
-      const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
-      navigate('/');
-    } catch (e) {
-      setError('Đăng nhập Google thất bại. Vui lòng thử lại.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
+import { GuestOnly, ProtectedRoute } from './components/ProtectedRoute';
+import SiteHeader from './components/SiteHeader';
+import SiteFooter from './components/SiteFooter';
+import SiteSidebar from './components/SiteSidebar';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import DashboardPage from './pages/DashboardPage';
+import AccountPage from './pages/AccountPage';
+import SettingsPage from './pages/SettingsPage';
+import PrivacyPage from './pages/PrivacyPage';
+import TermsPage from './pages/TermsPage';
+import HomePage from './pages/HomePage';
+import CareersPage from './pages/CareersPage';
+import AboutPage from './pages/AboutPage';
+import SecurityPage from './pages/SecurityPage';
+import { useLanguage } from './context/LanguageContext';
+import './App.css';
+function Layout({ children, user, onLogout }) {
   return (
-    <div className="card">
-      <div className="titleBlock">
-        <h1>Đăng nhập</h1>
-        <p className="subtitle">Đăng nhập để sử dụng công cụ tính lãi suất kép</p>
-      </div>
-      <form onSubmit={handleSubmit} className="form">
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Mật khẩu"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        {error && <p className="error">{error}</p>}
-        <button type="submit" disabled={loading}>
-          {loading ? 'Đang xử lý...' : 'Đăng nhập'}
-        </button>
-        <div className="divider">hoặc</div>
-        <button type="button" onClick={handleGoogleLogin} disabled={loading} className="googleButton">
-          {loading ? 'Đang xử lý...' : 'Đăng nhập với Google'}
-        </button>
-      </form>
-      <p className="authSwitch">
-        Chưa có tài khoản? <Link to="/register">Đăng ký ngay</Link>
-      </p>
-    </div>
-  );
-}
-
-function RegisterPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    setError('');
-
-    if (password.length < 6) {
-      setError('Mật khẩu phải có ít nhất 6 ký tự.');
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError('Mật khẩu xác nhận không khớp.');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      navigate('/');
-    } catch (e) {
-      setError('Đăng ký thất bại. Có thể email đã được sử dụng.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="card">
-      <div className="titleBlock">
-        <h1>Đăng ký</h1>
-        <p className="subtitle">Tạo tài khoản mới để bắt đầu quản lý kế hoạch tài chính</p>
-      </div>
-      <form onSubmit={handleSubmit} className="form">
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Mật khẩu"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Xác nhận mật khẩu"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          required
-        />
-        {error && <p className="error">{error}</p>}
-        <button type="submit" disabled={loading}>
-          {loading ? 'Đang xử lý...' : 'Tạo tài khoản'}
-        </button>
-      </form>
-      <p className="authSwitch">
-        Đã có tài khoản? <Link to="/login">Đăng nhập</Link>
-      </p>
-    </div>
-  );
-}
-
-function HomePage({ user }) {
-  const [principal, setPrincipal] = useState(10000000);
-  const [annualRate, setAnnualRate] = useState(8);
-  const [years, setYears] = useState(5);
-  const [compoundPerYear, setCompoundPerYear] = useState(12);
-
-  const result = useMemo(() => {
-    const p = Number(principal);
-    const r = Number(annualRate) / 100;
-    const t = Number(years);
-    const n = Number(compoundPerYear);
-
-    if (p <= 0 || r < 0 || t <= 0 || n <= 0) {
-      return { amount: 0, interest: 0 };
-    }
-
-    const amount = p * Math.pow(1 + r / n, n * t);
-    return {
-      amount,
-      interest: amount - p
-    };
-  }, [principal, annualRate, years, compoundPerYear]);
-
-  const handleLogout = async () => {
-    await signOut(auth);
-  };
-
-  return (
-    <div className="card">
-      <div className="homeHeader">
-        <h1>Tính lãi suất kép</h1>
-        <button type="button" onClick={handleLogout} className="secondary">
-          Đăng xuất
-        </button>
-      </div>
-      <p className="muted">Xin chào: {user?.email}</p>
-
-      <div className="form">
-        <label>
-          Số tiền gốc (VND)
-          <input
-            type="number"
-            min="0"
-            value={principal}
-            onChange={(e) => setPrincipal(e.target.value)}
-          />
-        </label>
-        <label>
-          Lãi suất năm (%)
-          <input
-            type="number"
-            step="0.1"
-            min="0"
-            value={annualRate}
-            onChange={(e) => setAnnualRate(e.target.value)}
-          />
-        </label>
-        <label>
-          Số năm
-          <input
-            type="number"
-            min="1"
-            value={years}
-            onChange={(e) => setYears(e.target.value)}
-          />
-        </label>
-        <label>
-          Số lần nhập lãi/năm
-          <input
-            type="number"
-            min="1"
-            value={compoundPerYear}
-            onChange={(e) => setCompoundPerYear(e.target.value)}
-          />
-        </label>
-      </div>
-
-      <div className="result">
-        <p className="resultLabel">Số tiền sau kỳ hạn</p>
-        <p className="resultValue">{Math.round(result.amount).toLocaleString('vi-VN')} VND</p>
-        <p className="resultLabel">Tổng tiền lãi</p>
-        <p className="resultValue">{Math.round(result.interest).toLocaleString('vi-VN')} VND</p>
+    <div className="page appShell">
+      <SiteSidebar />
+      <div className="appShellMain">
+        <SiteHeader user={user} onLogout={onLogout} />
+        {children}
+        <SiteFooter />
       </div>
     </div>
   );
 }
-
-function ProtectedRoute({ user, children }) {
-  if (!user) {
-    return <Navigate to="/login" replace />;
+function AppRoutes({ user, onLogout, checking }) {
+  const { t } = useLanguage();
+  if (checking) {
+    return (
+      <div className="page">
+        <div className="auth-checking">{t('auth.checking')}</div>
+      </div>
+    );
   }
-
-  return children;
+  return (
+    <Routes>
+      <Route
+        path="/login"
+        element={
+          <GuestOnly user={user}>
+            <Layout user={user} onLogout={onLogout}>
+              <LoginPage />
+            </Layout>
+          </GuestOnly>
+        }
+      />
+      <Route
+        path="/signup"
+        element={
+          <GuestOnly user={user}>
+            <Layout user={user} onLogout={onLogout}>
+              <RegisterPage />
+            </Layout>
+          </GuestOnly>
+        }
+      />
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute user={user}>
+            <Layout user={user} onLogout={onLogout}>
+              <DashboardPage user={user} />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/account"
+        element={
+          <ProtectedRoute user={user}>
+            <Layout user={user} onLogout={onLogout}>
+              <AccountPage user={user} />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRoute user={user}>
+            <Layout user={user} onLogout={onLogout}>
+              <SettingsPage user={user} />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/"
+        element={
+          <Layout user={user} onLogout={onLogout}>
+            <HomePage />
+          </Layout>
+        }
+      />
+      <Route
+        path="/careers"
+        element={
+          <Layout user={user} onLogout={onLogout}>
+            <CareersPage />
+          </Layout>
+        }
+      />
+      <Route
+        path="/about"
+        element={
+          <Layout user={user} onLogout={onLogout}>
+            <AboutPage />
+          </Layout>
+        }
+      />
+      <Route
+        path="/security"
+        element={
+          <Layout user={user} onLogout={onLogout}>
+            <SecurityPage />
+          </Layout>
+        }
+      />
+      <Route
+        path="/privacy"
+        element={
+          <Layout user={user} onLogout={onLogout}>
+            <PrivacyPage />
+          </Layout>
+        }
+      />
+      <Route
+        path="/terms"
+        element={
+          <Layout user={user} onLogout={onLogout}>
+            <TermsPage />
+          </Layout>
+        }
+      />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
 }
-
-function AppRoutes() {
+function App() {
   const [user, setUser] = useState(null);
   const [checking, setChecking] = useState(true);
-
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setChecking(false);
     });
-
     return () => unsubscribe();
   }, []);
-
-  if (checking) {
-    return (
-      <div className="centerText">
-        <p>Dang kiem tra phien dang nhap...</p>
-      </div>
-    );
-  }
-
+  const handleLogout = async () => {
+    await signOut(auth);
+  };
   return (
-    <Routes>
-      <Route
-        path="/"
-        element={
-          <ProtectedRoute user={user}>
-            <HomePage user={user} />
-          </ProtectedRoute>
-        }
-      />
-      <Route path="/login" element={user ? <Navigate to="/" replace /> : <LoginPage />} />
-      <Route path="/register" element={user ? <Navigate to="/" replace /> : <RegisterPage />} />
-      <Route path="*" element={<Navigate to={user ? '/' : '/login'} replace />} />
-    </Routes>
+    <BrowserRouter>
+      <AppRoutes user={user} onLogout={handleLogout} checking={checking} />
+    </BrowserRouter>
   );
 }
-
-function App() {
-  return (
-    <div className="appContainer">
-      <BrowserRouter>
-        <AppRoutes />
-      </BrowserRouter>
-    </div>
-  );
-}
-
 export default App;

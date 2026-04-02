@@ -1,0 +1,136 @@
+.auth-card {
+  width: min(560px, calc(100% - 28px));
+  margin: 32px auto 0;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(6px);
+  border-radius: 18px;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.34);
+  padding: 28px;
+}
+
+.auth-card h1 {
+  margin: 0;
+  font-size: 30px;
+  color: #fff;
+}
+
+.auth-title-block {
+  margin-bottom: 18px;
+}
+
+.auth-subtitle {
+  margin: 8px 0 0;
+  color: #a9b0ac;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.auth-form {
+  display: grid;
+  gap: 14px;
+}
+
+.auth-input-field {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #3d453f;
+  border-radius: 10px;
+  padding: 12px 13px;
+  outline: none;
+  font-size: 15px;
+  color: #fff;
+  background: #1b201d;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.auth-input-field:focus {
+  border-color: #c5ff2b;
+  box-shadow: 0 0 0 3px rgba(197, 255, 43, 0.18);
+}
+
+.auth-primary-btn {
+  border: none;
+  border-radius: 10px;
+  padding: 11px 14px;
+  background: #c5ff2b;
+  color: #101210;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.2s ease;
+}
+
+.auth-primary-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(197, 255, 43, 0.28);
+}
+
+.auth-primary-btn:disabled,
+.auth-google-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.auth-google-btn {
+  border-radius: 10px;
+  padding: 11px 14px;
+  background: #fff;
+  color: #111827;
+  border: 1px solid #d1d5db;
+  cursor: pointer;
+}
+
+.auth-divider {
+  position: relative;
+  text-align: center;
+  font-size: 13px;
+  color: #97a19a;
+  margin: 2px 0;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 38%;
+  height: 1px;
+  background: #3d453f;
+}
+
+.auth-divider::before {
+  left: 0;
+}
+
+.auth-divider::after {
+  right: 0;
+}
+
+.auth-error {
+  color: #fecaca;
+  margin: 2px 0;
+  background: rgba(127, 29, 29, 0.35);
+  border: 1px solid rgba(248, 113, 113, 0.4);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 13px;
+}
+
+.auth-switch {
+  margin: 16px 0 0;
+  color: #b3bbb5;
+  font-size: 14px;
+}
+
+.auth-switch a {
+  color: #c5ff2b;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.auth-switch a:hover {
+  text-decoration: underline;
+}
